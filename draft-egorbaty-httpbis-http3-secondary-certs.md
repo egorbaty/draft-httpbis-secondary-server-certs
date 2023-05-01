@@ -25,9 +25,9 @@ venue:
 
 author:
  -
-    fullname: Your Name Here
-    organization: Your Organization Here
-    email: "132305823+egorbaty@users.noreply.github.com"
+    fullname: Eric Gorbaty
+    organization: Apple
+    email: "e_gorbaty@apple.com"
 
 normative:
 
@@ -36,7 +36,7 @@ informative:
 
 --- abstract
 
-TODO Abstract
+TODO Secondary Certs for HTTP3
 
 
 --- middle
