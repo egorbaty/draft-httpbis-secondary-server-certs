@@ -19,8 +19,8 @@
 # Change the file extension to match the format (.xml for XML, etc...)
 #
 ###
-title: "TODO - Your title"
-abbrev: "TODO - Abbreviation"
+title: "Secondary Certificate Authentication in HTTP/3"
+abbrev: "Secondary Cert Auth in HTTP/3"
 category: info
 
 docname: draft-todo-yourname-protocol-latest
