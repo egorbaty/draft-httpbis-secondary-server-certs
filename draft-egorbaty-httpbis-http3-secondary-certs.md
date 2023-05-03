@@ -188,7 +188,7 @@ Client                                      Server
    <----------------------- (stream N) 200 OK --
 
 ~~~
-{: #ex-http2-server-proactive title="Proactive server authentication"}
+{: #ex-http3-server-proactive title="Proactive server authentication"}
 
 ### Requiring Additional Server Certificates
 
