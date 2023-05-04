@@ -1,6 +1,6 @@
 ---
-title: "Secondary Certificate Authentication in HTTP/3"
-abbrev: "Secondary Cert Auth in HTTP/3"
+title: "Secondary Certificate Authentication of HTTP servers"
+abbrev: "HTTP Server Secondary Cert Auth"
 category: std
 
 docname: draft-egorbaty-httpbis-http3-secondary-certs-latest
