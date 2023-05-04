@@ -17,7 +17,7 @@
 /versioned/
 Gemfile.lock
 archive.json
-draft-egorbaty-httpbis-http3-secondary-certs.xml
+draft-egorbaty-httpbis-secondary-server-certs.xml
 package-lock.json
 report.xml
 !requirements.txt
