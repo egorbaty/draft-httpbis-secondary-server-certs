@@ -3,7 +3,7 @@ title: "Secondary Certificate Authentication of HTTP servers"
 abbrev: "HTTP Server Secondary Cert Auth"
 category: std
 
-docname: draft-egorbaty-httpbis-http3-secondary-certs-latest
+docname: draft-egorbaty-httpbis-secondary-server-certs-latest
 submissiontype: IETF  # also: "independent", "IAB", or "IRTF"
 number:
 date:
