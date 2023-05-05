@@ -431,7 +431,7 @@ Reference: : This document
 This specification registers the following entry in the "HTTP/3 Settings" registry
 defined in {{H3}}:
 
-Code: : TDB
+Code: : TBD
 
 Name: : SETTINGS_HTTP_SERVER_CERT_AUTH
 
