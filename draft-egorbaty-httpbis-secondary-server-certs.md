@@ -111,10 +111,10 @@ This draft defines HTTP/2 and HTTP/3 frames to carry the relevant certificate me
 enabling certificate-based authentication of servers independent of TLS version. This mechanism can be implemented at
 the HTTP layer without breaking the existing interface between HTTP and applications above it.
 
-TLS Exported Authenticators {{EXPORTED-AUTH}} allow the opportunity for an HTTP/2 and HTTP/3 servers to send certificate frames
-which can be used to prove the servers authenticity for multiple origins.
+TLS Exported Authenticators {{EXPORTED-AUTH}} allow the opportunity for an HTTP/2 and HTTP/3 servers
+to send certificate frames {{certs-http}} which can be used to prove the servers authenticity for multiple origins.
 
-This draft additionally defines SETTINGS parameters for HTTP/2 and HTTP/3 that allow
+This draft additionally defines SETTINGS parameters for HTTP/2 and HTTP/3 {{settings}} that allow
 the client and server to indicate support for HTTP-Layer certificate authentication.
 
 # Conventions and Definitions
@@ -131,14 +131,15 @@ for future use.
 
 TODO: Possibility of using headers to allow clients to indicate interest in using a particular certificate ID?
 
-## Indicating Support for HTTP-Layer Certificate Authentication {#setting}
+## Indicating Support for HTTP-Layer Certificate Authentication {#settings-usage}
 
-Clients and servers who wish to indicate support for HTTP-Layer certificate authentication MUST send
+The `SETTINGS_HTTP_SERVER_CERT_AUTH` parameters for HTTP/2 and HTTP/3 are defined in {{settings}}
+so that clients and servers can indicate support for secondary certificate authentication of servers.
+
+HTTP/2 and HTTP/3 endpoints who wish to indicate support for HTTP-Layer certificate authentication MUST send
 a `SETTINGS_HTTP_SERVER_CERT_AUTH` parameter set to "1" in their SETTINGS frame. Endpoints MUST
 NOT use any of the authentication functionality described in this draft unless the
 parameter has been negotiated by both sides.
-
-The value of the parameter MUST be 0 or 1.
 
 Endpoints MUST NOT send a `SETTINGS_HTTP_SERVER_CERT_AUTH` parameter with
 a value of 0 after previously sending a value of 1.
@@ -151,7 +152,7 @@ that the server sends.
 ## Making Certificates or Requests Available {#cert-available}
 
 When both peers have advertised support for HTTP-layer certificates in a given
-direction as in {{setting}}, the indicated endpoint can supply additional
+direction as in {{settings-usage}}, the indicated endpoint can supply additional
 certificates into the connection at any time.  That is, if both endpoints have
 sent `SETTINGS_HTTP_SERVER_CERT_AUTH` and validated the value received from the
 peer, the server may send certificates unprompted, at any time.
@@ -182,6 +183,22 @@ Client                                      Server
 ### Requiring Additional Server Certificates
 
 TODO - Should we find an answer for this, or all certs are unprompted?? CONNECT?
+
+# SETTINGS_HTTP_SERVER_CERT_AUTH {#settings}
+
+## The SETTINGS_HTTP_SERVER_CERT_AUTH HTTP/2 SETTINGS Parameter {#http2-setting}
+This document adds a new HTTP/2 SETTINGS(0xTBD) parameter to those defined by {{Section 6.5.2 of H2}}.
+
+The new parameter name is `SETTINGS_HTTP_SERVER_CERT_AUTH`. The value of the parameter MUST be 0 or 1.
+
+The usage of this parameter is described in {{settings-usage}}.
+
+## The SETTINGS_HTTP_SERVER_CERT_AUTH HTTP/3 SETTINGS Parameter {#http3-setting}
+This document adds a new HTTP/3 SETTINGS(0xTBD) parameter to those defined by {{Section 7.2.4.1 of H3}}.
+
+The new parameter name is `SETTINGS_HTTP_SERVER_CERT_AUTH`. The value of the parameter MUST be 0 or 1.
+
+The usage of this parameter is described in {{settings-usage}}.
 
 # CERTIFICATE_FRAME {#certs-http}
 
