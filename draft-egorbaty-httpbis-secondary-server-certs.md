@@ -1,5 +1,5 @@
 ---
-title: "Secondary Certificate Authentication of HTTP servers"
+title: "Secondary Certificate Authentication of HTTP Servers"
 abbrev: "HTTP Server Secondary Cert Auth"
 category: std
 
@@ -25,48 +25,30 @@ author:
     organization: Apple
     email: "e_gorbaty@apple.com"
 
-normative:
-  RFC5246:
-  RFC7230:
-  RFC8446:
-  RFC9113:
-  RFC9114:
-  RFC9261:
-
-informative:
-  RFC7838:
-
 --- abstract
 
-A use of TLS Exported Authenticators is described which enables HTTP/2 and HTTP/3 servers to offer additional certificate-based
-credentials after the connection is established. The means by which these credentials are used with requests is defined.
+This document defines a way for HTTP/2 and HTTP/3 servers to send additional
+certificate-based credentials after a TLS connection is established, based
+on TLS Exported Authenticators.
 
 --- middle
 
 # Introduction
 
-HTTP clients need to know that the content they receive on a connection comes
-from the origin that they intended to retrieve it from. The traditional form of
-server authentication in HTTP has been in the form of a single X.509 certificate
-provided during the TLS ([RFC5246], [RFC8446]) handshake.
+HTTP {{!HTTP=RFC9110}} clients need to know that the content they receive on a
+connection comes from the origin that they intended to retrieve it from. The
+traditional form of server authentication in HTTP has been in the form of a
+single X.509 certificate provided during the TLS {{!TLS13=RFC8446}} handshake.
 
-Many existing HTTP [RFC7230] servers also have authentication requirements for
-the resources they serve.  Of the bountiful authentication options available for
-authenticating HTTP requests, client certificates present a unique challenge for
-resource-specific authentication requirements because of the interaction with
-the underlying TLS layer.
+TLS supports one server and one client certificate on a connection. These
+certificates may contain multiple identities, but only one certificate may be
+provided.
 
-TLS 1.2 [RFC5246] supports one server and one client certificate on a
-connection. These certificates may contain multiple identities, but only one
-certificate may be provided.
-
-Many HTTP servers host content from several origins. HTTP/2 [RFC9113] and HTTP/3 [RFC9114]
-permits clients to reuse an existing HTTP connection to a server provided that the secondary origin
+Many HTTP servers host content from several origins. HTTP/2 {{!H2=RFC9113}} and HTTP/3 {{!H3=RFC9114}}
+permit clients to reuse an existing HTTP connection to a server provided that the secondary origin
 is also in the certificate provided during the TLS handshake.  In many cases,
 servers choose to maintain separate certificates for different origins but
 still desire the benefits of a shared HTTP connection.
-
-TODO: Multipath extension for QUIC makes HTTP/3 shared connections much more desirable?
 
 The ability to maintain seperate certificates for different origins can also allow proxies
 that cache content from secondary origins to communicate to clients that they can service some
@@ -75,19 +57,19 @@ instead of establishing a TLS encrypted tunnel through the proxy.
 
 ## Server Certificate Authentication
 
-Section 9.1.1 of [RFC9113] and 3.3 of [RFC9114] describes how connections may be used to make
+{{Section 9.1.1 of H2}} and {{Section 3.3 of H3}} describe how connections may be used to make
 requests from multiple origins as long as the server is authoritative for both.
 A server is considered authoritative for an origin if DNS resolves the origin to
 the IP address of the server and (for TLS) if the certificate presented by the
 server contains the origin in the Subject Alternative Names field.
 
-[RFC7838] enables a step of abstraction from the DNS resolution. If both hosts
+{{?ALTSVC=RFC7838}} enables a step of abstraction from the DNS resolution. If both hosts
 have provided an Alternative Service at hostnames which resolve to the IP
 address of the server, they are considered authoritative just as if DNS resolved
 the origin itself to that address. However, the server's one TLS certificate is
 still required to contain the name of each origin in question.
 
-{{?RFC8336}} relaxes the requirement to perform the DNS lookup if already
+{{?ORIGIN=RFC8336}} relaxes the requirement to perform the DNS lookup if already
 connected to a server with an appropriate certificate which claims support for a
 particular origin.
 
@@ -107,7 +89,7 @@ certificate or anonymous ciphersuite at the TLS layer, while acquiring the
 
 ## TLS Exported Authenticators
 
-TLS Exported Authenticators [RFC9261] are structured messages that can be exported by
+TLS Exported Authenticators {{!EXPORTED-AUTH=RFC9261}} are structured messages that can be exported by
 either party of a TLS connection and validated by the other party. Given an
 established TLS connection, an authenticator message can be constructed proving
 possession of a certificate and a corresponding private key. The mechanisms that this draft defines
@@ -123,14 +105,13 @@ possession of the corresponding private key, which can be supplied into a
 collection of available certificates. Likewise, descriptions of desired
 certificates can be supplied into these collections.
 
-
 ## HTTP-Layer Certificate Authentication
 
 This draft defines HTTP/2 and HTTP/3 frames to carry the relevant certificate messages,
 enabling certificate-based authentication of servers independent of TLS version. This mechanism can be implemented at
 the HTTP layer without breaking the existing interface between HTTP and applications above it.
 
-TLS Exported Authenticators [RFC9261] allow the opportunity for an HTTP/2 and HTTP/3 servers to send certificate frames
+TLS Exported Authenticators {{EXPORTED-AUTH}} allow the opportunity for an HTTP/2 and HTTP/3 servers to send certificate frames
 which can be used to prove the servers authenticity for multiple origins.
 
 This draft additionally defines SETTINGS parameters for HTTP/2 and HTTP/3 that allow
@@ -247,7 +228,7 @@ CERTIFICATE Frame {
 ~~~~~~~~~~
 {: title="HTTP/2 CERTIFICATE Frame"}
 
-The Length, Type, Unused Flag(s), Reserved, and Stream Identifier fields are described in Section 4 of [RFC9113].
+The Length, Type, Unused Flag(s), Reserved, and Stream Identifier fields are described in {{Section 4 of H2}}.
 
 TODO: Continuations / Field Block Fragments?
 The CERTIFICATE frame does not define any flags.
@@ -273,7 +254,7 @@ CERTIFICATE Frame {
 ~~~~~~~~~~
 {: title="HTTP/3 CERTIFICATE Frame"}
 
-The Type and Length fields are described in section 7.1 of [RFC9114].
+The Type and Length fields are described in {{Section 7.1 of H3}}.
 
 The authenticator field is a portion of the opaque data returned from the TLS connection exported
 authenticator authenticate API. See {{exp-auth}} for more details on the
@@ -281,7 +262,7 @@ input to this API.
 
 ## Exported Authenticator Characteristics {#exp-auth}
 
-The Exported Authenticator API defined in [RFC9261]
+The Exported Authenticator API defined in {{EXPORTED-AUTH}}
 takes as input a request, a set of certificates, and supporting information
 about the certificate (OCSP, SCT, etc.).  The result is an opaque token which is
 used when generating the `CERTIFICATE` frame.
@@ -349,12 +330,12 @@ its control in order to present the compromised certificate. Clients SHOULD
 consult DNS for hostnames presented in secondary certificates if they would have
 done so for the same hostname if it were present in the primary certificate.
 
-As recommended in {{?RFC8336}}, clients opting not to consult DNS ought to
+As recommended in {{ORIGIN}}, clients opting not to consult DNS ought to
 employ some alternative means to increase confidence that the certificate is
 legitimate.
 
 As noted in the Security Considerations of
-[RFC9261], it is difficult to formally prove that an
+{{EXPORTED-AUTH}}, it is difficult to formally prove that an
 endpoint is jointly authoritative over multiple certificates, rather than
 individually authoritative on each certificate.  As a result, clients MUST NOT
 assume that because one origin was previously colocated with another, those
