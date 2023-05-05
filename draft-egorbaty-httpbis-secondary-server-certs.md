@@ -60,16 +60,16 @@ TLS 1.2 [RFC5246] supports one server and one client certificate on a
 connection. These certificates may contain multiple identities, but only one
 certificate may be provided.
 
-Many HTTP servers host content from several origins. HTTP/2 [RFC9113] and HTTP/3 [RFC9114] 
+Many HTTP servers host content from several origins. HTTP/2 [RFC9113] and HTTP/3 [RFC9114]
 permits clients to reuse an existing HTTP connection to a server provided that the secondary origin
 is also in the certificate provided during the TLS handshake.  In many cases,
 servers choose to maintain separate certificates for different origins but
-still desire the benefits of a shared HTTP connection. 
+still desire the benefits of a shared HTTP connection.
 
 TODO: Multipath extension for QUIC makes HTTP/3 shared connections much more desirable?
 
-The ability to maintain seperate certificates for different origins can also allow proxies 
-that cache content from secondary origins to communicate to clients that they can service some 
+The ability to maintain seperate certificates for different origins can also allow proxies
+that cache content from secondary origins to communicate to clients that they can service some
 of those origins directly, and allow clients to make requests directly to the proxy for those origins
 instead of establishing a TLS encrypted tunnel through the proxy.
 
@@ -146,7 +146,7 @@ as well as making requests/responses for authenticated origins in those frames.
 
 {::boilerplate bcp14-tagged}
 
-# Discovering Additional Certificates at the HTTP/3 Layer {#discovery}
+# Discovering Additional Certificates at the HTTP Layer {#discovery}
 
 A certificate chain with proof of possession of the private key corresponding to
 the end-entity certificate is sent as a sequence of `CERTIFICATE` frames (see
@@ -166,7 +166,7 @@ parameter has been negotiated by both sides.
 The value of the parameter MUST be 0 or 1.
 
 Endpoints MUST NOT send a `SETTINGS_HTTP_SERVER_CERT_AUTH` parameter with
-a value of 0 after previously sending a value of 1. 
+a value of 0 after previously sending a value of 1.
 
 `SETTINGS_HTTP_SERVER_CERT_AUTH` indicates that servers are able to offer additional
 certificates to demonstrate control over other origin hostnames, and that clients
@@ -182,7 +182,7 @@ sent `SETTINGS_HTTP_SERVER_CERT_AUTH` and validated the value received from the
 peer, the server may send certificates unprompted, at any time.
 
 TODO: For 0-RTT, might it be the case that servers can send certs unprompted as
-long as the client has advertised support? 
+long as the client has advertised support?
 
 Certificates supplied by servers can be considered by clients without further
 action by the server. A server SHOULD NOT send certificates which do not cover
@@ -215,7 +215,7 @@ message from the TLS layer that provides a chain of certificates, associated
 extensions and proves possession of the private key corresponding to the
 end-entity certificate.
 
-A server sends a CERTIFICATE frame on stream 0 for HTTP/2, and on the control stream for HTTP/3. 
+A server sends a CERTIFICATE frame on stream 0 for HTTP/2, and on the control stream for HTTP/3.
 The client is permitted to make subsequent requests for resources upon receipt of a CERTIFICATE frame without
 further action from the server.
 
@@ -300,7 +300,7 @@ If the authenticator cannot be validated, this SHOULD be treated as a connection
 error.
 
 Once the authenticator is accepted, the endpoint can perform any other checks
-for the acceptability of the certificate itself.  
+for the acceptability of the certificate itself.
 
 TODO: Required Domain extension ??
 
