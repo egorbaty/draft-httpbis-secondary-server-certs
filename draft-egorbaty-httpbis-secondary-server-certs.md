@@ -28,8 +28,9 @@ author:
 normative:
   RFC5246:
   RFC7230:
-  RFC7540:
   RFC8446:
+  RFC9113:
+  RFC9114:
   RFC9261:
 
 informative:
@@ -37,7 +38,7 @@ informative:
 
 --- abstract
 
-A use of TLS Exported Authenticators is described which enables HTTP/3 servers to offer additional certificate-based
+A use of TLS Exported Authenticators is described which enables HTTP/2 and HTTP/3 servers to offer additional certificate-based
 credentials after the connection is established. The means by which these credentials are used with requests is defined.
 
 --- middle
@@ -59,19 +60,22 @@ TLS 1.2 [RFC5246] supports one server and one client certificate on a
 connection. These certificates may contain multiple identities, but only one
 certificate may be provided.
 
-Many HTTP servers host content from several origins. HTTP/3 permits clients to
-reuse an existing HTTP connection to a server provided that the secondary origin
+Many HTTP servers host content from several origins. HTTP/2 [RFC9113] and HTTP/3 [RFC9114]
+permits clients to reuse an existing HTTP connection to a server provided that the secondary origin
 is also in the certificate provided during the TLS handshake.  In many cases,
 servers choose to maintain separate certificates for different origins but
 still desire the benefits of a shared HTTP connection.
 
-TODO: Adapt properly for HTTP3 and QUIC, mentioning further benefits of shared HTTP connection over HTTP/3
+TODO: Multipath extension for QUIC makes HTTP/3 shared connections much more desirable?
 
-TODO: Explain the use? Or somewhere else?
+The ability to maintain seperate certificates for different origins can also allow proxies
+that cache content from secondary origins to communicate to clients that they can service some
+of those origins directly, and allow clients to make requests directly to the proxy for those origins
+instead of establishing a TLS encrypted tunnel through the proxy.
 
 ## Server Certificate Authentication
 
-Section 9.1.1 of [RFC7540] describes how connections may be used to make
+Section 9.1.1 of [RFC9113] and 3.3 of [RFC9114] describes how connections may be used to make
 requests from multiple origins as long as the server is authoritative for both.
 A server is considered authoritative for an origin if DNS resolves the origin to
 the IP address of the server and (for TLS) if the certificate presented by the
@@ -122,29 +126,31 @@ certificates can be supplied into these collections.
 
 ## HTTP-Layer Certificate Authentication
 
-This draft defines HTTP/3 frames to carry the relevant certificate messages,
+This draft defines HTTP/2 and HTTP/3 frames to carry the relevant certificate messages,
 enabling certificate-based authentication of servers independent of TLS version. This mechanism can be implemented at
 the HTTP layer without breaking the existing interface between HTTP and applications above it.
 
-TLS Exported Authenticators [RFC9261] allow the opportunity for an HTTP/3 server to send a certificate frame
-on the control stream which can be used to prove the servers authenticity for multiple origins, and not require
-a secondary TLS negotiation. TODO: For a proxy??
+TLS Exported Authenticators [RFC9261] allow the opportunity for an HTTP/2 and HTTP/3 servers to send certificate frames
+which can be used to prove the servers authenticity for multiple origins.
 
+This draft additionally defines SETTINGS parameters for HTTP/2 and HTTP/3 that allow
+the client and server to indicate support for HTTP-Layer certificate authentication.
+
+TODO: REMOVE
 To indicate support for HTTP-Layer certificate authentication, both the client
 and server have to send the `SETTINGS_HTTP_SERVER_CERT_AUTH`setting in order to
 indicate that they both support handling of CERTIFICATE frames,
 as well as making requests/responses for authenticated origins in those frames.
 
-
 # Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
 
-# Discovering Additional Certificates at the HTTP/3 Layer {#discovery}
+# Discovering Additional Certificates at the HTTP Layer {#discovery}
 
 A certificate chain with proof of possession of the private key corresponding to
 the end-entity certificate is sent as a sequence of `CERTIFICATE` frames (see
-{{http-cert}}) on the control stream to the client. Once the holder of a certificate has sent the
+{{http2-cert}}, {{http3-cert}}) to the client. Once the holder of a certificate has sent the
 chain and proof, this certificate chain is cached by the recipient and available
 for future use.
 
@@ -152,10 +158,15 @@ TODO: Possibility of using headers to allow clients to indicate interest in usin
 
 ## Indicating Support for HTTP-Layer Certificate Authentication {#setting}
 
-In order to indicate support for HTTP-Layer certificate authentication, both the client and the server MUST send
-a SETTINGS_HTTP_SERVER_CERT_AUTH value set to "1" in their SETTINGS frame. Endpoints MUST
+Clients and servers who wish to indicate support for HTTP-Layer certificate authentication MUST send
+a `SETTINGS_HTTP_SERVER_CERT_AUTH` parameter set to "1" in their SETTINGS frame. Endpoints MUST
 NOT use any of the authentication functionality described in this draft unless the
-parameter has been negotiated.
+parameter has been negotiated by both sides.
+
+The value of the parameter MUST be 0 or 1.
+
+Endpoints MUST NOT send a `SETTINGS_HTTP_SERVER_CERT_AUTH` parameter with
+a value of 0 after previously sending a value of 1.
 
 `SETTINGS_HTTP_SERVER_CERT_AUTH` indicates that servers are able to offer additional
 certificates to demonstrate control over other origin hostnames, and that clients
@@ -171,21 +182,24 @@ sent `SETTINGS_HTTP_SERVER_CERT_AUTH` and validated the value received from the
 peer, the server may send certificates unprompted, at any time.
 
 TODO: For 0-RTT, might it be the case that servers can send certs unprompted as
-long as the client has advertised support? OK to send unknown frame type and discard?
+long as the client has advertised support?
 
 Certificates supplied by servers can be considered by clients without further
 action by the server. A server SHOULD NOT send certificates which do not cover
 origins which it is prepared to service on the current connection, and should NOT send
-them if the client has not indicated support.
+them if the client has not indicated support with `SETTINGS_HTTP_SERVER_CERT_AUTH`.
 
-TODO - Involve CONNECT?
+A client MUST NOT send certificates to the server. The server SHOULD close the connection
+upon receipt of a CERTIFICATE frame from a client.
+
+TODO: MUST NOT? Or should not. Servers can just ignore these? or bad for backwards compatibility
 
 ~~~ drawing
 Client                                      Server
-   <-------------- (control stream) CERTIFICATE --
+   <-- (stream 0 / control stream) CERTIFICATE --
    ...
-   -- (stream N) GET /from-new-origin --------->
-   <----------------------- (stream N) 200 OK --
+   -- (stream N) GET /from-new-origin ---------->
+   <----------------------- (stream N) 200 OK ---
 
 ~~~
 {: #ex-http3-server-proactive title="Proactive server authentication"}
@@ -194,17 +208,15 @@ Client                                      Server
 
 TODO - Should we find an answer for this, or all certs are unprompted?? CONNECT?
 
-# Certificates Frames for HTTP/3 {#certs-http3}
+# CERTIFICATE_FRAME {#certs-http}
 
-## CERTIFICATE {#http-cert}
-
-The CERTIFICATE frame (type=0xTBD) provides an exported authenticator
+The CERTIFICATE frame provides an exported authenticator
 message from the TLS layer that provides a chain of certificates, associated
 extensions and proves possession of the private key corresponding to the
 end-entity certificate.
 
-A server sends a CERTIFICATE frame on the control stream. The client is permitted
-to make subsequent requests for resources upon receipt of a CERTIFICATE frame without
+A server sends a CERTIFICATE frame on stream 0 for HTTP/2, and on the control stream for HTTP/3.
+The client is permitted to make subsequent requests for resources upon receipt of a CERTIFICATE frame without
 further action from the server.
 
 Upon receiving a complete series of CERTIFICATE frames, the receiver may
@@ -212,55 +224,85 @@ validate the Exported Authenticator value by using the exported authenticator
 API. This returns either an error indicating that the message was invalid, or
 the certificate chain and extensions used to create the message.
 
-The CERTIFICATE frame MUST be sent on stream zero.  A CERTIFICATE frame
+## HTTP/2 CERTIFICATE frame {#http2-cert}
+A CERTIFICATE frame in HTTP/2 (type=0xTBD) carrries a TLS Exported authenticator
+that clients can use to authenticate secondary origins from a sending server.
+
+The CERTIFICATE frame MUST be sent on stream 0. A CERTIFICATE frame
+received on any other stream MUST not be used for server authentication.
+
+~~~~~~~~~~ ascii-art
+CERTIFICATE Frame {
+  Length (24),
+  Type (8) = 0xTBD,
+
+  Unused Flags (8),
+
+  Reserved (1),
+  Stream Identifier (31) = 0,
+
+  Reserved (32),
+  Authenticator (..),
+}
+~~~~~~~~~~
+{: title="HTTP/2 CERTIFICATE Frame"}
+
+The Length, Type, Unused Flag(s), Reserved, and Stream Identifier fields are described in Section 4 of [RFC9113].
+
+TODO: Continuations / Field Block Fragments?
+The CERTIFICATE frame does not define any flags.
+
+The CERTIFICATE frame applies to the connection, not a specific stream. An endpoint MUST(TODO??) treat a CERTIFICATE frame with a stream identifier other than 0x00 as a connection error.
+
+The authenticator field is a portion of the opaque data returned from the TLS connection exported
+authenticator authenticate API. See {{exp-auth}} for more details on the input to this API.
+
+## HTTP/3 CERTIFICATE frame {#http3-cert}
+A CERTIFICATE frame in HTTP/3 (type=0xTBD) carrries a TLS Exported authenticator
+that clients can use to authenticate secondary origins from a sending server.
+
+The CERTIFICATE frame MUST be sent on the control stream.  A CERTIFICATE frame
 received on any other stream MUST not be used for server authentication.
 
 ~~~~~~~~~~ ascii-art
 CERTIFICATE Frame {
   Type (i) = 0xTBD,
   Length (i),
-  Cert-ID (i), ???
   Authenticator (...),
 }
 ~~~~~~~~~~
-{: title="CERTIFICATE Frame"}
+{: title="HTTP/3 CERTIFICATE Frame"}
+
+The Type and Length fields are described in section 7.1 of [RFC9114].
 
 The authenticator field is a portion of the opaque data returned from the TLS connection exported
 authenticator authenticate API. See {{exp-auth}} for more details on the
 input to this API.
 
-TODO: Do anything with this?
-The Cert-ID field identifies the certificate...
-The server MAY include a certificate ID to identify the certificate that they have sent.
-The client MAY include the certificate ID that they are using in subsequent requests by....?
-
-TODO: Authenticator fragments? Or all authenticators come in one frame?
-
-### Exported Authenticator Characteristics {#exp-auth}
+## Exported Authenticator Characteristics {#exp-auth}
 
 The Exported Authenticator API defined in [RFC9261]
 takes as input a request, a set of certificates, and supporting information
 about the certificate (OCSP, SCT, etc.).  The result is an opaque token which is
 used when generating the `CERTIFICATE` frame.
 
-Upon receipt of a `CERTIFICATE` frame, an endpoint MUST perform the following
-steps to validate the token it contains:
+Upon receipt of a `CERTIFICATE` frame, an endpoint which has negotiated support for
+secondary certfiicates MUST perform the following steps to validate the token it contains:
 
-- TODO: Verify that certificates should be received
 - TODO: Validate that the API is the same. Request-ID probably not needed.
 - Using the `get context` API, retrieve the `certificate_request_context` used
   to generate the authenticator, if any.  Verify that the `certificate_request_context`
-  begins with the supplied Request-ID (?), if any.
+  begins with the supplied Request-ID (TODO?), if any.
 - Use the `validate` API to confirm the validity of the authenticator with
   regard to the generated request (if any).
 
 If the authenticator cannot be validated, this SHOULD be treated as a connection
-error of type `CERTIFICATE_UNREADABLE`.
+error.
 
 Once the authenticator is accepted, the endpoint can perform any other checks
-for the acceptability of the certificate itself.  Clients MUST NOT accept any
-end-entity certificate from an exported authenticator which does not contain
-the Required Domain extension(TODO??); see {{extension}} and {{impersonation}}.
+for the acceptability of the certificate itself.
+
+TODO: Required Domain extension ??
 
 # TODO: Indicating Failures During HTTP-Layer Certificate Authentication {#errors}
 
@@ -271,7 +313,7 @@ defined at the TLS layer might now occur at the HTTP framing layer.
 There are two classes of errors which might be encountered, and they are handled
 differently.
 
-## TODO: Define any errors? Misbehavior
+## Misbehavior
 
 This category of errors could indicate a peer failing to follow restrictions in
 this document, or might indicate that the connection is not fully secure.  These
@@ -281,7 +323,7 @@ CERTIFICATE_UNREADABLE (0xERROR-TBD3):
 : An exported authenticator could not be validated.
 
 ## Invalid Certificates
-TODO: Validates the existence of a cert-ID slightly.
+TODO: Validates the existence of a cert-ID. Consider?
 
 Unacceptable certificates (expired, revoked, or insufficient to satisfy the
 request) are not treated as stream or connection errors.  This is typically not
@@ -289,36 +331,6 @@ an indication of a protocol failure.  Servers SHOULD process requests with the
 indicated certificate, likely resulting in a "4XX"-series status code in the
 response. Clients SHOULD establish a new connection in an attempt to reach an
 authoritative server.
-
-# Required Domain Certificate Extension TODO: Do we care about this? {#extension}
-
-The Required Domain extension allows certificates to limit their use with
-Secondary Certificate Authentication.  A client MUST verify that the server has
-proven ownership of the indicated identity before accepting the limited
-certificate over Secondary Certificate Authentication.
-
-The identity in this extension is a restriction asserted by the requester of the
-certificate and is not verified by the CA.  Conforming CAs SHOULD mark the
-requiredDomain extension as non-critical.  Conforming CAs MUST require the
-presence of a CAA record {{!RFC6844}} prior to issuing a certificate with this
-extension.  Because a Required Domain value of "*" has a much higher risk of
-reuse if compromised, conforming Certificate Authorities are encouraged to
-require more extensive verification prior to issuing such a certificate.
-
-The required domain is represented as a GeneralName, as specified in Section
-4.2.1.6 of {{!RFC5280}}. Unlike the subject field, conforming CAs MUST NOT issue
-certificates with a requiredDomain extension containing empty GeneralName
-fields.  Clients that encounter such a certificate when processing a
-certification path MUST consider the certificate invalid.
-
-The wildcard character "*" MAY be used to represent that any previously
-authenticated identity is acceptable.  This character MUST be the entirety of
-the name if used and MUST have a type of "dNSName".  (That is, "*" is
-acceptable, but "*.com" and "w*.example.com" are not).
-
-    id-ce-requiredDomain OBJECT IDENTIFIER ::=  { id-ce TBD1 }
-
-    RequiredDomain ::= GeneralName
 
 # Security Considerations {#security}
 
@@ -340,13 +352,6 @@ done so for the same hostname if it were present in the primary certificate.
 As recommended in {{?RFC8336}}, clients opting not to consult DNS ought to
 employ some alternative means to increase confidence that the certificate is
 legitimate.
-
-One such means is the Required Domain certificate extension defined in
-{extension}. Clients MUST require that server certificates presented via this
-mechanism contain the Required Domain extension and require that a certificate
-previously accepted on the connection (including the certificate presented in
-TLS) lists the Required Domain in the Subject field or the Subject Alternative
-Name extension.
 
 As noted in the Security Considerations of
 [RFC9261], it is difficult to formally prove that an
