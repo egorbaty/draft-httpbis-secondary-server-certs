@@ -382,11 +382,66 @@ during the processing of a request, potentially multiple times, as
 authentication needs to be prepared to reevaluate the authorization state of a
 request as the set of certificates changes.
 
-
 # IANA Considerations
 
-TODO IANA Considerations
+This document registers the `CERTIFICATE` frame type and `SETTINGS_HTTP_SERVER_CERT_AUTH`
+setting for both {{H2}} and {{H3}}.
 
+## Frame Types
+
+This specification registers the following entry in the "HTTP/2 Frame Type" registry
+defined in {{H2}}:
+
+Code: : TBD
+
+Frame Type: : CERTIFICATE
+
+Reference: : This document
+
+
+This specification registers the following entry in the "HTTP/3 Frame Types" registry
+established by {{H3}}:
+
+Value: : TBD
+
+Frame Type: : CERTIFICATE
+
+Status: : permanent
+
+Reference: : This document
+
+Change Controller: : IETF
+
+Contact: : ietf-http-wg@w3.org
+
+## Settings Parameters
+
+This specification registers the following entry in the "HTTP/2 Settings" registry
+defined in {{H2}}:
+
+Code: : TDB
+
+Name: : SETTINGS_HTTP_SERVER_CERT_AUTH
+
+Initial Value: : 0
+
+Reference: : This document
+
+
+This specification registers the following entry in the "HTTP/3 Settings" registry
+defined in {{H3}}:
+
+Code: : TDB
+
+Name: : SETTINGS_HTTP_SERVER_CERT_AUTH
+
+Default: : 0
+
+Reference: : This document
+
+Change Controller: : IETF
+
+Contact: : ietf-http-wg@w3.org
 
 --- back
 
