@@ -419,7 +419,7 @@ Contact: : ietf-http-wg@w3.org
 This specification registers the following entry in the "HTTP/2 Settings" registry
 defined in {{H2}}:
 
-Code: : TDB
+Code: : TBD
 
 Name: : SETTINGS_HTTP_SERVER_CERT_AUTH
 
