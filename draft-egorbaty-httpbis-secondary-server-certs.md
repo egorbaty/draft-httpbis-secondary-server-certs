@@ -216,7 +216,6 @@ CERTIFICATE Frame {
   Reserved (1),
   Stream Identifier (31) = 0,
 
-  Reserved (32),
   Authenticator (..),
 }
 ~~~~~~~~~~
