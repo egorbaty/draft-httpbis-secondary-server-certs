@@ -117,12 +117,6 @@ which can be used to prove the servers authenticity for multiple origins.
 This draft additionally defines SETTINGS parameters for HTTP/2 and HTTP/3 that allow
 the client and server to indicate support for HTTP-Layer certificate authentication.
 
-TODO: REMOVE
-To indicate support for HTTP-Layer certificate authentication, both the client
-and server have to send the `SETTINGS_HTTP_SERVER_CERT_AUTH`setting in order to
-indicate that they both support handling of CERTIFICATE frames,
-as well as making requests/responses for authenticated origins in those frames.
-
 # Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
@@ -231,12 +225,14 @@ CERTIFICATE Frame {
 The Length, Type, Unused Flag(s), Reserved, and Stream Identifier fields are described in {{Section 4 of H2}}.
 
 TODO: Continuations / Field Block Fragments?
-The CERTIFICATE frame does not define any flags.
 
-The CERTIFICATE frame applies to the connection, not a specific stream. An endpoint MUST(TODO??) treat a CERTIFICATE frame with a stream identifier other than 0x00 as a connection error.
+The CERTIFICATE frame does not define any flags.
 
 The authenticator field is a portion of the opaque data returned from the TLS connection exported
 authenticator authenticate API. See {{exp-auth}} for more details on the input to this API.
+
+The CERTIFICATE frame applies to the connection, not a specific stream. An endpoint MUST treat a CERTIFICATE
+frame with a stream identifier other than 0x00 as a connection error.
 
 ## HTTP/3 CERTIFICATE frame {#http3-cert}
 A CERTIFICATE frame in HTTP/3 (type=0xTBD) carrries a TLS Exported authenticator
@@ -259,6 +255,9 @@ The Type and Length fields are described in {{Section 7.1 of H3}}.
 The authenticator field is a portion of the opaque data returned from the TLS connection exported
 authenticator authenticate API. See {{exp-auth}} for more details on the
 input to this API.
+
+The CERTIFICATE frame applies to the connection, not a specific stream. An endpoint MUST treat a CERTIFICATE
+frame not send on the control stream as a connection error.
 
 ## Exported Authenticator Characteristics {#exp-auth}
 
