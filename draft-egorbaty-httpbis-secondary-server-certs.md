@@ -179,7 +179,7 @@ Client                                        Server
 {: #ex-http-server-unprompted-basic title="Simple unprompted server authentication"}
 
 A server MAY send a `CERTIFICATE` immediately after sending it's `SETTINGS`. However, it MAY
-also send certificates certificates afterward. For example, a proxy might discover that
+also send certificates afterward. For example, a proxy might discover that
 a client is interested in an origin that it can reverse proxy at the time that a client sends a
 `CONNECT` request. It can then send certificates for those origins to allow for TLS-terminated
 reverse proxying to those origins for the remainder of the connection lifetime.
