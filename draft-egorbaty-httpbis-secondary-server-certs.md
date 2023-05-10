@@ -48,11 +48,13 @@ Many HTTP servers host content from several origins. HTTP/2 {{!H2=RFC9113}} and 
 permit clients to reuse an existing HTTP connection to a server provided that the secondary origin
 is also in the certificate provided during the TLS handshake.  In many cases,
 servers choose to maintain separate certificates for different origins but
-still desire the benefits of a shared HTTP connection.
+still desire the benefits of a shared HTTP connection. This document defines
+a capability for servers to use and authenticate with those seperate certificates over
+a shared connection.
 
 The ability to maintain seperate certificates for different origins can also allow proxies
 that cache content from secondary origins to communicate to clients that they can service some
-of those origins directly, and allow clients to make requests directly to the proxy for those origins
+of those origins directly, and allow for a TLS-terminating reverse proxy for those origins
 instead of establishing a TLS encrypted tunnel through the proxy.
 
 ## Server Certificate Authentication
@@ -107,14 +109,14 @@ certificates can be supplied into these collections.
 
 ## HTTP-Layer Certificate Authentication
 
-This draft defines HTTP/2 and HTTP/3 frames to carry the relevant certificate messages,
+This draft defines HTTP/2 and HTTP/3 `CERTIFICATE` frames ({{certs-http}}) to carry the relevant certificate messages,
 enabling certificate-based authentication of servers independent of TLS version. This mechanism can be implemented at
 the HTTP layer without breaking the existing interface between HTTP and applications above it.
 
 TLS Exported Authenticators {{EXPORTED-AUTH}} allow the opportunity for an HTTP/2 and HTTP/3 servers
-to send certificate frames {{certs-http}} which can be used to prove the servers authenticity for multiple origins.
+to send certificate frames which can be used to prove the servers authenticity for multiple origins.
 
-This draft additionally defines SETTINGS parameters for HTTP/2 and HTTP/3 {{settings}} that allow
+This draft additionally defines SETTINGS parameters for HTTP/2 and HTTP/3 ({{settings}}) that allow
 the client and server to indicate support for HTTP-Layer certificate authentication.
 
 # Conventions and Definitions
@@ -128,8 +130,6 @@ the end-entity certificate is sent as a sequence of `CERTIFICATE` frames (see
 {{http2-cert}}, {{http3-cert}}) to the client. Once the holder of a certificate has sent the
 chain and proof, this certificate chain is cached by the recipient and available
 for future use.
-
-TODO: Possibility of using headers to allow clients to indicate interest in using a particular certificate ID?
 
 ## Indicating Support for HTTP-Layer Certificate Authentication {#settings-usage}
 
@@ -157,8 +157,9 @@ certificates into the connection at any time.  That is, if both endpoints have
 sent `SETTINGS_HTTP_SERVER_CERT_AUTH` and validated the value received from the
 peer, the server may send certificates unprompted, at any time.
 
-TODO: For 0-RTT, might it be the case that servers can send certs unprompted as
-long as the client has advertised support?
+This does mean that if a server knows it supports secondary certificate authentication,
+and it receives `SETTINGS_HTTP_SERVER_CERT_AUTH` from the client, that it can enqueue
+certificates immediately following the received SETTINGS frame.
 
 Certificates supplied by servers can be considered by clients without further
 action by the server. A server SHOULD NOT send certificates which do not cover
@@ -168,23 +169,34 @@ them if the client has not indicated support with `SETTINGS_HTTP_SERVER_CERT_AUT
 A client MUST NOT send certificates to the server. The server SHOULD close the connection
 upon receipt of a CERTIFICATE frame from a client.
 
-TODO: MUST NOT? Or should not. Servers can just ignore these? or bad for backwards compatibility
-
 ~~~ drawing
-Client                                      Server
+Client                                        Server
    <-- (stream 0 / control stream) CERTIFICATE --
    ...
    -- (stream N) GET /from-new-origin ---------->
    <----------------------- (stream N) 200 OK ---
-
 ~~~
-{: #ex-http3-server-proactive title="Proactive server authentication"}
+{: #ex-http-server-unprompted-basic title="Simple unprompted server authentication"}
 
-### Requiring Additional Server Certificates
+A server MAY send a `CERTIFICATE` immediately after sending it's `SETTINGS`. However, it MAY
+also send certificates afterward. For example, a proxy might discover that
+a client is interested in an origin that it can reverse proxy at the time that a client sends a
+`CONNECT` request. It can then send certificates for those origins to allow for TLS-terminated
+reverse proxying to those origins for the remainder of the connection lifetime.
+{{ex-http-server-unprompted-reverse}} illustrates this behavior.
 
-TODO - Should we find an answer for this, or all certs are unprompted?? CONNECT?
+~~~ drawing
+Client                                        Server
+   -- (stream N) CONNECT /to-new-origin -------->
+   <-- (stream 0 / control stream) CERTIFICATE --
+   ...
+   -- (stream M) GET /to-new-origin ------------>
+   <--- (stream M, direct from server) 200 OK ---
+~~~
+{: #ex-http-server-unprompted-reverse title="Reverse proxy server authentication"}
 
 # SETTINGS_HTTP_SERVER_CERT_AUTH {#settings}
+SETTINGS parameters for HTTP/2 and HTTP/3 seperately are defined below.
 
 ## The SETTINGS_HTTP_SERVER_CERT_AUTH HTTP/2 SETTINGS Parameter {#http2-setting}
 This document adds a new HTTP/2 SETTINGS(0xTBD) parameter to those defined by {{Section 6.5.2 of H2}}.
@@ -200,7 +212,7 @@ The new parameter name is `SETTINGS_HTTP_SERVER_CERT_AUTH`. The value of the par
 
 The usage of this parameter is described in {{settings-usage}}.
 
-# CERTIFICATE_FRAME {#certs-http}
+# CERTIFICATE frame {#certs-http}
 
 The CERTIFICATE frame provides an exported authenticator
 message from the TLS layer that provides a chain of certificates, associated
@@ -239,8 +251,6 @@ CERTIFICATE Frame {
 {: title="HTTP/2 CERTIFICATE Frame"}
 
 The Length, Type, Unused Flag(s), Reserved, and Stream Identifier fields are described in {{Section 4 of H2}}.
-
-TODO: Continuations / Field Block Fragments?
 
 The CERTIFICATE frame does not define any flags.
 
@@ -285,10 +295,8 @@ used when generating the `CERTIFICATE` frame.
 Upon receipt of a `CERTIFICATE` frame, an endpoint which has negotiated support for
 secondary certfiicates MUST perform the following steps to validate the token it contains:
 
-- TODO: Validate that the API is the same. Request-ID probably not needed.
 - Using the `get context` API, retrieve the `certificate_request_context` used
-  to generate the authenticator, if any.  Verify that the `certificate_request_context`
-  begins with the supplied Request-ID (TODO?), if any.
+  to generate the authenticator, if any.
 - Use the `validate` API to confirm the validity of the authenticator with
   regard to the generated request (if any).
 
@@ -298,9 +306,7 @@ error.
 Once the authenticator is accepted, the endpoint can perform any other checks
 for the acceptability of the certificate itself.
 
-TODO: Required Domain extension ??
-
-# TODO: Indicating Failures During HTTP-Layer Certificate Authentication {#errors}
+# Indicating Failures During HTTP-Layer Certificate Authentication {#errors}
 
 Because this draft permits certificates to be exchanged at the HTTP framing
 layer instead of the TLS layer, several certificate-related errors which are
@@ -315,12 +321,10 @@ This category of errors could indicate a peer failing to follow restrictions in
 this document, or might indicate that the connection is not fully secure.  These
 errors are fatal to stream or connection, as appropriate.
 
-CERTIFICATE_UNREADABLE (0xERROR-TBD3):
+CERTIFICATE_UNREADABLE (0xERROR-TBD):
 : An exported authenticator could not be validated.
 
 ## Invalid Certificates
-TODO: Validates the existence of a cert-ID. Consider?
-
 Unacceptable certificates (expired, revoked, or insufficient to satisfy the
 request) are not treated as stream or connection errors.  This is typically not
 an indication of a protocol failure.  Servers SHOULD process requests with the
@@ -387,16 +391,17 @@ which third-party providers SHOULD educate their customers before using the
 features described in this document.
 
 ## Confusion About State
-
-TODO: Valid? There may surely be confusions about state here. Not sure if the old
-wording is a good way to put this.
-
 Implementations need to be aware of the potential for confusion about the state
 of a connection. The presence or absence of a validated certificate can change
 during the processing of a request, potentially multiple times, as
 `CERTIFICATE` frames are received. A client that uses certificate
 authentication needs to be prepared to reevaluate the authorization state of a
 request as the set of certificates changes.
+
+Behavior for TLS-Terminated reverse proxies is also worth considering. If a server
+which situationally reverse-proxies wishes for the client to view a request made
+prior to receipt of certificates as TLS-Terminated, or wishes for the client to start a new tunnel alternatively,
+this draft does not currently define formal mechanisms to facilitate that intention.
 
 # IANA Considerations
 
