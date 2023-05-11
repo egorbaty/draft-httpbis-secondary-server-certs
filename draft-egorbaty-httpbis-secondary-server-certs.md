@@ -21,9 +21,15 @@ venue:
 
 author:
  -
+    ins: E. Gorbaty
     fullname: Eric Gorbaty
     organization: Apple
     email: "e_gorbaty@apple.com"
+ -
+    ins: M. Bishop
+    name: Mike Bishop
+    org: Akamai
+    email: mbishop@evequefou.be
 
 --- abstract
 
