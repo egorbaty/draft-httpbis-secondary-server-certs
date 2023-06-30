@@ -498,4 +498,10 @@ Contact: : ietf-http-wg@w3.org
 # Acknowledgments
 {:numbered="false"}
 
-TODO acknowledge.
+Thanks to Mike Bishop, Nick Sullivan, Martin Thomson and other
+contributors for their work on the draft that this is based on.
+
+And thanks to Eric Kinnear and Tommy Pauly for their guidance and
+editorial contributions to this draft.
+
+TODO: Other acknowledgements
