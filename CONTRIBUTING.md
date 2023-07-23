@@ -43,3 +43,17 @@ technical issues needs to occur on the mailing list.
 
 You might also like to familiarize yourself with other
 [Working Group documents](https://datatracker.ietf.org/wg/httpbis/documents/).
+## Working Group Information
+
+Discussion of this work occurs on the [HTTP
+Working Group mailing list](mailto:ietf-http-wg@w3.org)
+([archive](http://lists.w3.org/Archives/Public/ietf-http-wg/),
+[subscribe](ietf-http-wg-request@w3.org)).
+In addition to contributions in GitHub, you are encouraged to participate in
+discussions there.
+
+**Note**: Some working groups adopt a policy whereby substantive discussion of
+technical issues needs to occur on the mailing list.
+
+You might also like to familiarize yourself with other
+[Working Group documents](https://datatracker.ietf.org/wg/httpbis/documents/).
