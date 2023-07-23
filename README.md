@@ -2,10 +2,10 @@
 
 This is the working area for the individual Internet-Draft, "Secondary Certificate Authentication of HTTP Servers".
 
-* [Editor's Copy](https://egorbaty.github.io/draft-httpbis-secondary-server-certs/#go.draft-egorbaty-httpbis-secondary-server-certs.html)
+* [Editor's Copy](https://egorbaty.github.io/draft-httpbis-secondary-server-certs/draft-egorbaty-httpbis-secondary-server-certs.html)
 * [Datatracker Page](https://datatracker.ietf.org/doc/draft-egorbaty-httpbis-secondary-server-certs)
 * [Individual Draft](https://datatracker.ietf.org/doc/html/draft-egorbaty-httpbis-secondary-server-certs)
-* [Compare Editor's Copy to Individual Draft](https://egorbaty.github.io/draft-httpbis-secondary-server-certs/#go.draft-egorbaty-httpbis-secondary-server-certs.diff)
+* [Compare Editor's Copy to Individual Draft](https://egorbaty.github.io/draft-httpbis-secondary-server-certs/draft-egorbaty-httpbis-secondary-server-certs.diff)
 
 
 ## Contributing
