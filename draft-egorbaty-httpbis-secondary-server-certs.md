@@ -16,8 +16,8 @@ venue:
   type: "Working Group"
   mail: "ietf-http-wg@w3.org"
   arch: "https://lists.w3.org/Archives/Public/ietf-http-wg/"
-  github: "egorbaty/draft-httpbis-http3-secondary-certs"
-  latest: "https://egorbaty.github.io/draft-httpbis-http3-secondary-certs/draft-egorbaty-httpbis-http3-secondary-certs.html"
+  github: "egorbaty/draft-httpbis-secondary-server-certs"
+  latest: "https://egorbaty.github.io/draft-httpbis-secondary-server-certs/draft-egorbaty-httpbis-secondary-server-certs.html"
 
 author:
  -
