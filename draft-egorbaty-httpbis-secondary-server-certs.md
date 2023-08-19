@@ -328,7 +328,8 @@ token it contains:
 - Using the `get context` API, retrieve the `certificate_request_context` used
   to generate the authenticator, if any. Because the `certificate_request_context`
   for spontaneous server certificates is chosen by the server, the usage of
-  the `certificate_request_context` is implementation-dependent.
+  the `certificate_request_context` is implementation-dependent. For details,
+  see {{Section 5 of EXPORTED-AUTH}}.
 - Use the `validate` API to confirm the validity of the authenticator with
   regard to the generated request, if any.
 
