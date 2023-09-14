@@ -5,8 +5,8 @@
 HTTP                                                          E. Gorbaty
 Internet-Draft                                                     Apple
 Intended status: Standards Track                               M. Bishop
-Expires: 20 February 2024                                         Akamai
-                                                          19 August 2023
+Expires: 17 March 2024                                            Akamai
+                                                       14 September 2023
 
 
           Secondary Certificate Authentication of HTTP Servers
@@ -51,7 +51,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 20 February 2024.
+   This Internet-Draft will expire on 17 March 2024.
 
 Copyright Notice
 
@@ -463,8 +463,8 @@ Table of Contents
    satisfy the request) are not treated as stream or connection errors.
    This is typically not an indication of a protocol failure.  Clients
    SHOULD establish a new connection in an attempt to reach an
-   authoritative server, in the case that they deem a certificate from
-   the server unacceptable.
+   authoritative server if they deem a certificate from the server
+   unacceptable.
 
 7.  Security Considerations
 
