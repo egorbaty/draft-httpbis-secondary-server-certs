@@ -361,7 +361,7 @@ CERTIFICATE_UNREADABLE (0xERROR-TBD):
 Unacceptable certificates (expired, revoked, or insufficient to satisfy the
 request) are not treated as stream or connection errors. This is typically not
 an indication of a protocol failure. Clients SHOULD establish a new connection
-in an attempt to reach an authoritative server, in the case that they deem a
+in an attempt to reach an authoritative server if they deem a
 certificate from the server unacceptable.
 
 # Security Considerations {#security}
