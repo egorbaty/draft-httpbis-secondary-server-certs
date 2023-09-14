@@ -5,8 +5,8 @@
 HTTP                                                          E. Gorbaty
 Internet-Draft                                                     Apple
 Intended status: Standards Track                               M. Bishop
-Expires: 24 January 2024                                          Akamai
-                                                            23 July 2023
+Expires: 17 March 2024                                            Akamai
+                                                       14 September 2023
 
 
           Secondary Certificate Authentication of HTTP Servers
@@ -23,17 +23,18 @@ About This Document
    This note is to be removed before publishing as an RFC.
 
    The latest revision of this draft can be found at
-   https://egorbaty.github.io/draft-httpbis-http3-secondary-certs/draft-
-   egorbaty-httpbis-http3-secondary-certs.html.  Status information for
-   this document may be found at https://datatracker.ietf.org/doc/draft-
-   egorbaty-httpbis-secondary-server-certs/.
+   https://egorbaty.github.io/draft-httpbis-secondary-server-certs/
+   draft-egorbaty-httpbis-secondary-server-certs.html.  Status
+   information for this document may be found at
+   https://datatracker.ietf.org/doc/draft-egorbaty-httpbis-secondary-
+   server-certs/.
 
    Discussion of this document takes place on the HTTP Working Group
    mailing list (mailto:ietf-http-wg@w3.org), which is archived at
    https://lists.w3.org/Archives/Public/ietf-http-wg/.
 
    Source for this draft and an issue tracker can be found at
-   https://github.com/egorbaty/draft-httpbis-http3-secondary-certs.
+   https://github.com/egorbaty/draft-httpbis-secondary-server-certs.
 
 Status of This Memo
 
@@ -50,7 +51,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 24 January 2024.
+   This Internet-Draft will expire on 17 March 2024.
 
 Copyright Notice
 
@@ -76,7 +77,7 @@ Table of Contents
    3.  Discovering Additional Certificates at the HTTP Layer
      3.1.  Indicating Support for HTTP-Layer Certificate
            Authentication
-     3.2.  Making Certificates or Requests Available
+     3.2.  Making Certificates Available
    4.  SETTINGS_HTTP_SERVER_CERT_AUTH
      4.1.  The SETTINGS_HTTP_SERVER_CERT_AUTH HTTP/2 SETTINGS
            Parameter{#http2-setting}
@@ -246,14 +247,16 @@ Table of Contents
    hostnames received in a TLS Exported Authenticator that the server
    sends.
 
-3.2.  Making Certificates or Requests Available
+3.2.  Making Certificates Available
 
    When both peers have advertised support for HTTP-layer certificates
    in a given direction as in Section 3.1, the indicated endpoint can
    supply additional certificates into the connection at any time.  That
    is, if both endpoints have sent SETTINGS_HTTP_SERVER_CERT_AUTH and
    validated the value received from the peer, the server may send
-   certificates unprompted, at any time.
+   certificates spontaneously, at any time, as described by the
+   Spontaneous Server Authentication message sequence in Section 3 of
+   [EXPORTED-AUTH].
 
    This does mean that if a server knows it supports secondary
    certificate authentication, and it receives
@@ -263,7 +266,7 @@ Table of Contents
    Certificates supplied by servers can be considered by clients without
    further action by the server.  A server SHOULD NOT send certificates
    which do not cover origins which it is prepared to service on the
-   current connection, and should NOT send them if the client has not
+   current connection, and SHOULD NOT send them if the client has not
    indicated support with SETTINGS_HTTP_SERVER_CERT_AUTH.
 
    A client MUST NOT send certificates to the server.  The server SHOULD
@@ -290,6 +293,7 @@ Table of Contents
    Client                                        Server
       -- (stream N) CONNECT /to-new-origin -------->
       <-- (stream 0 / control stream) CERTIFICATE --
+      <-- (stream 0 / control stream) 200 OK -------
       ...
       -- (stream M) GET /to-new-origin ------------>
       <--- (stream M, direct from server) 200 OK ---
@@ -419,7 +423,10 @@ Table of Contents
 
    *  Using the get context API, retrieve the
       certificate_request_context used to generate the authenticator, if
-      any.
+      any.  Because the certificate_request_context for spontaneous
+      server certificates is chosen by the server, the usage of the
+      certificate_request_context is implementation-dependent.  For
+      details, see Section 5 of [EXPORTED-AUTH].
 
    *  Use the validate API to confirm the validity of the authenticator
       with regard to the generated request, if any.
@@ -454,11 +461,10 @@ Table of Contents
 
    Unacceptable certificates (expired, revoked, or insufficient to
    satisfy the request) are not treated as stream or connection errors.
-   This is typically not an indication of a protocol failure.  Servers
-   SHOULD process requests with the indicated certificate, likely
-   resulting in a "4XX"-series status code in the response.  Clients
+   This is typically not an indication of a protocol failure.  Clients
    SHOULD establish a new connection in an attempt to reach an
-   authoritative server.
+   authoritative server if they deem a certificate from the server
+   unacceptable.
 
 7.  Security Considerations
 
@@ -481,7 +487,7 @@ Table of Contents
 
    As recommended in [ORIGIN], clients opting not to consult DNS ought
    to employ some alternative means to increase confidence that the
-   certificate is legitimate.
+   certificate is legitimate, such as an ORIGIN frame.
 
    As noted in the Security Considerations of [EXPORTED-AUTH], it is
    difficult to formally prove that an endpoint is jointly authoritative
@@ -490,8 +496,8 @@ Table of Contents
    one origin was previously colocated with another, those origins will
    be reachable via the same endpoints in the future.  Clients MUST NOT
    consider previous secondary certificates to be validated after TLS
-   session resumption.  However, clients MAY proactively query for
-   previously-presented secondary certificates.
+   session resumption.  Servers MAY re-present certificates if a TLS
+   Session is resumed.
 
 7.2.  Fingerprinting
 
@@ -499,11 +505,6 @@ Table of Contents
    for origins they support, but it opens no new attack that was not
    already possible by making repeat TLS connections with different SNI
    values.
-
-   Servers can also learn information about clients using this
-   mechanism.  The hostnames a user agent finds interesting and
-   retrieves certificates for might indicate origins the user has
-   previously accessed.
 
 7.3.  Persistence of Service
 
