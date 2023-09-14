@@ -164,14 +164,15 @@ additional certificates to demonstrate control over other origin hostnames, and
 that clients are able to make requests for hostnames received in a TLS Exported
 Authenticator that the server sends.
 
-## Making Certificates or Requests Available {#cert-available}
+## Making Certificates Available {#cert-available}
 
 When both peers have advertised support for HTTP-layer certificates in a given
 direction as in {{settings-usage}}, the indicated endpoint can supply
 additional certificates into the connection at any time. That is, if both
 endpoints have sent `SETTINGS_HTTP_SERVER_CERT_AUTH` and validated the value
-received from the peer, the server may send certificates unprompted, at any
-time.
+received from the peer, the server may send certificates spontaneously, at any
+time, as described by the `Spontaneous Server Authentication` message sequence
+in {{Section 3 of EXPORTED-AUTH}}.
 
 This does mean that if a server knows it supports secondary certificate
 authentication, and it receives `SETTINGS_HTTP_SERVER_CERT_AUTH` from the
@@ -180,7 +181,7 @@ SETTINGS frame.
 
 Certificates supplied by servers can be considered by clients without further
 action by the server. A server SHOULD NOT send certificates which do not cover
-origins which it is prepared to service on the current connection, and should
+origins which it is prepared to service on the current connection, and SHOULD
 NOT send them if the client has not indicated support with
 `SETTINGS_HTTP_SERVER_CERT_AUTH`.
 
@@ -208,6 +209,7 @@ those origins for the remainder of the connection lifetime.
 Client                                        Server
    -- (stream N) CONNECT /to-new-origin -------->
    <-- (stream 0 / control stream) CERTIFICATE --
+   <-- (stream 0 / control stream) 200 OK -------
    ...
    -- (stream M) GET /to-new-origin ------------>
    <--- (stream M, direct from server) 200 OK ---
@@ -324,7 +326,10 @@ for secondary certfiicates MUST perform the following steps to validate the
 token it contains:
 
 - Using the `get context` API, retrieve the `certificate_request_context` used
-  to generate the authenticator, if any.
+  to generate the authenticator, if any. Because the `certificate_request_context`
+  for spontaneous server certificates is chosen by the server, the usage of
+  the `certificate_request_context` is implementation-dependent. For details,
+  see {{Section 5 of EXPORTED-AUTH}}.
 - Use the `validate` API to confirm the validity of the authenticator with
   regard to the generated request, if any.
 
@@ -355,10 +360,9 @@ CERTIFICATE_UNREADABLE (0xERROR-TBD):
 ## Invalid Certificates
 Unacceptable certificates (expired, revoked, or insufficient to satisfy the
 request) are not treated as stream or connection errors. This is typically not
-an indication of a protocol failure. Servers SHOULD process requests with the
-indicated certificate, likely resulting in a "4XX"-series status code in the
-response. Clients SHOULD establish a new connection in an attempt to reach an
-authoritative server.
+an indication of a protocol failure. Clients SHOULD establish a new connection
+in an attempt to reach an authoritative server if they deem a
+certificate from the server unacceptable.
 
 # Security Considerations {#security}
 
@@ -380,7 +384,7 @@ certificate.
 
 As recommended in {{ORIGIN}}, clients opting not to consult DNS ought to employ
 some alternative means to increase confidence that the certificate is
-legitimate.
+legitimate, such as an `ORIGIN` frame.
 
 As noted in the Security Considerations of {{EXPORTED-AUTH}}, it is difficult to
 formally prove that an endpoint is jointly authoritative over multiple
@@ -388,18 +392,14 @@ certificates, rather than individually authoritative on each certificate. As a
 result, clients MUST NOT assume that because one origin was previously
 colocated with another, those origins will be reachable via the same endpoints
 in the future. Clients MUST NOT consider previous secondary certificates to be
-validated after TLS session resumption. However, clients MAY proactively query
-for previously-presented secondary certificates.
+validated after TLS session resumption. Servers MAY re-present certificates
+if a TLS Session is resumed.
 
 ## Fingerprinting
 
 This draft defines a mechanism which could be used to probe servers for origins
 they support, but it opens no new attack that was not already possible by
 making repeat TLS connections with different SNI values.
-
-Servers can also learn information about clients using this mechanism. The
-hostnames a user agent finds interesting and retrieves certificates for might
-indicate origins the user has previously accessed.
 
 ## Persistence of Service
 
