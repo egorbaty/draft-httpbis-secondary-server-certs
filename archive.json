@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2023-08-24T01:10:10.646164+00:00",
+  "timestamp": "2023-09-17T01:16:30.318881+00:00",
   "repo": "egorbaty/draft-httpbis-secondary-server-certs",
   "labels": [
     {
@@ -277,7 +277,7 @@
       "id": "I_kwDOJdpP_s5lOgd5",
       "title": "Formalize exported authenticator validation steps",
       "url": "https://github.com/egorbaty/draft-httpbis-secondary-server-certs/issues/17",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "egorbaty",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -288,8 +288,8 @@
       ],
       "body": "With the absence of a request-ID, what do we want to do here? is a request ID neccecary?",
       "createdAt": "2023-05-05T23:22:05Z",
-      "updatedAt": "2023-05-08T21:14:11Z",
-      "closedAt": null,
+      "updatedAt": "2023-09-14T16:43:24Z",
+      "closedAt": "2023-09-14T16:43:24Z",
       "comments": []
     },
     {
@@ -297,7 +297,7 @@
       "id": "I_kwDOJdpP_s5lOgkf",
       "title": "Clear up confusions about state",
       "url": "https://github.com/egorbaty/draft-httpbis-secondary-server-certs/issues/18",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "egorbaty",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -306,8 +306,8 @@
       ],
       "body": "State can be a little confusing even if all we do is unprompted server certs. It might be worth thinking about expanding on this and giving suggestions for handling behavior.",
       "createdAt": "2023-05-05T23:23:10Z",
-      "updatedAt": "2023-06-30T21:07:31Z",
-      "closedAt": null,
+      "updatedAt": "2023-09-14T16:43:23Z",
+      "closedAt": "2023-09-14T16:43:23Z",
       "comments": []
     },
     {
@@ -371,15 +371,15 @@
       "id": "I_kwDOJdpP_s5m1Dgy",
       "title": "How do clients proactively query for certificates",
       "url": "https://github.com/egorbaty/draft-httpbis-secondary-server-certs/issues/23",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "ekinnear",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "The following paragraph refers to querying for a certificate on a subsequent connection: \r\n\r\n> As noted in the Security Considerations of {{EXPORTED-AUTH}}, it is difficult to\r\nformally prove that an endpoint is jointly authoritative over multiple\r\ncertificates, rather than individually authoritative on each certificate. As a\r\nresult, clients MUST NOT assume that because one origin was previously\r\ncolocated with another, those origins will be reachable via the same endpoints\r\nin the future. Clients MUST NOT consider previous secondary certificates to be\r\nvalidated after TLS session resumption. However, clients MAY proactively query\r\nfor previously-presented secondary certificates.\r\n\r\nHave we explicitly defined what this query looks like?",
       "createdAt": "2023-05-25T06:40:00Z",
-      "updatedAt": "2023-07-10T20:54:27Z",
-      "closedAt": null,
+      "updatedAt": "2023-09-14T16:43:23Z",
+      "closedAt": "2023-09-14T16:43:23Z",
       "comments": [
         {
           "author": "egorbaty",
@@ -402,7 +402,7 @@
       "id": "I_kwDOJdpP_s5quSwM",
       "title": "Add CONNECT response to reverse-proxy authentication diagram",
       "url": "https://github.com/egorbaty/draft-httpbis-secondary-server-certs/issues/26",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "egorbaty",
       "authorAssociation": "OWNER",
       "assignees": [
@@ -413,8 +413,8 @@
       ],
       "body": "Feedback from Ryan Globus: \"In the second diagram in 3.2, it\u2019d be nice to indicate the server still responds to the CONNECT request in stream N\"\r\n\r\nSeems like adding a 200 response should be sufficient there.",
       "createdAt": "2023-07-05T23:39:50Z",
-      "updatedAt": "2023-07-05T23:39:51Z",
-      "closedAt": null,
+      "updatedAt": "2023-09-14T16:43:23Z",
+      "closedAt": "2023-09-14T16:43:23Z",
       "comments": []
     },
     {
@@ -795,7 +795,7 @@
       "id": "PR_kwDOJdpP_s5YSVCp",
       "title": "Remove client-cert references, refinements from 117",
       "url": "https://github.com/egorbaty/draft-httpbis-secondary-server-certs/pull/27",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "egorbaty",
       "authorAssociation": "OWNER",
       "assignees": [
@@ -804,17 +804,19 @@
       "labels": [],
       "body": "Closes #26, Closes #23, Closes #18, Closes #17.\r\n\r\nRemoves references to client certs, clarifies `certificate_request_context` usage, more clearly points to spontaneous server certs in the exported authenticator spec, recommends ORIGIN frame usage in absence of a DNS-Check more strongly, add 200 OK to the reverse-proxy diagram.\r\n\r\nPlanning on addressing continuations for HTTP/2 and renaming the Frame to SERVER_CERTIFICATE in separate PRs. ",
       "createdAt": "2023-08-19T00:16:36Z",
-      "updatedAt": "2023-08-22T02:52:38Z",
+      "updatedAt": "2023-09-14T16:43:22Z",
       "baseRepository": "egorbaty/draft-httpbis-secondary-server-certs",
       "baseRefName": "main",
       "baseRefOid": "21425ef5bea76250d30677b78e24ed255ff380f4",
       "headRepository": "egorbaty/draft-httpbis-secondary-server-certs",
       "headRefName": "egorbaty/remove-querying",
-      "headRefOid": "8f8b9fa2220df6d8667171a1ee73576c745b9752",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "0bc106061e2dd5e0a5e6f69dbc70dac11e602b70",
+      "closedAt": "2023-09-14T16:43:22Z",
+      "mergedAt": "2023-09-14T16:43:22Z",
+      "mergedBy": "egorbaty",
+      "mergeCommit": {
+        "oid": "35d74617f0771cf078488530f8de7509002a7f1a"
+      },
       "comments": [
         {
           "author": "egorbaty",
