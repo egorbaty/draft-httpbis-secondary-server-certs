@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2023-10-15T01:18:52.164866+00:00",
+  "timestamp": "2023-11-05T01:19:21.491433+00:00",
   "repo": "egorbaty/draft-httpbis-secondary-server-certs",
   "labels": [
     {
@@ -429,9 +429,9 @@
       "labels": [
         "discussion"
       ],
-      "body": "David Benjamin has noted in conversation that Chrome requires the ability to tell which certificate is used for a given request, even just for a UI feature that shows the certificate used. He has noted there might be other cases where clients and servers need to be in agreement about what certificate was used.\r\n\r\nPresumably the server can choose to fill the `certificate_request_context` with some identifier that can be used to make these correlations. Not yet sure how the client would communicate this is the server needed to know what cert it thinks the client is using (if the server, for example, issued multiple certificates for the same ORIGIN...?)",
+      "body": "David Benjamin has noted in conversation that Chrome requires the ability to tell which certificate is used for a given request, even just for a UI feature that shows the certificate used. He has noted there might be other cases where clients and servers need to be in agreement about what certificate was used.\r\n\r\nPresumably the server can choose to fill the `certificate_request_context` with some identifier that can be used to make these correlations. Not yet sure how the client would go about communicating this if the server needed to know what cert the client is using (if the server, for example, issued multiple certificates for the same ORIGIN...?)",
       "createdAt": "2023-08-19T00:25:27Z",
-      "updatedAt": "2023-08-19T00:25:27Z",
+      "updatedAt": "2023-11-04T17:20:22Z",
       "closedAt": null,
       "comments": []
     },
